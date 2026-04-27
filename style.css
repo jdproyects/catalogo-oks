@@ -26,19 +26,48 @@ body {
     display: block;
 }
 
-/* Tus etiquetas se mantienen igual, el sistema de coordenadas no cambia */
+/* =========================================
+   ETIQUETAS DE PRECIO (Optimizadas para Móvil)
+   ========================================= */
+
 .etiqueta-precio {
     position: absolute;
     background: rgba(255, 255, 255, 0.95);
-    padding: 2px 5px;
+    padding: 2px 4px; /* Un poco menos de relleno para hacerla más compacta */
     border-radius: 3px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    font-size: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    
+    /* LA MAGIA PARA APILARLOS */
+    display: flex;
+    flex-direction: column; /* Obliga a poner un elemento debajo del otro */
+    align-items: center;    /* Los centra perfectamente */
+    justify-content: center;
+    
+    /* TAMAÑO GENERAL REDUCIDO */
+    font-size: 9px; 
+    line-height: 1.1; /* Mantiene los textos pegaditos */
+    
     transform: translate(-50%, calc(-100% - 3px));
     pointer-events: none;
     text-align: center;
     z-index: 5;
 }
 
-.precio-normal.tachado { text-decoration: line-through; color: #888; font-size: 8px; }
-.precio-promo { color: #d32f2f; font-weight: bold; }
+.precio-normal {
+    color: #333;
+    font-weight: bold;
+}
+
+.precio-normal.tachado {
+    text-decoration: line-through;
+    color: #888;
+    font-size: 7px; /* Súper pequeñito para que no quite atención */
+    font-weight: normal;
+    margin-bottom: 1px; /* Separación milimétrica con el precio de promo */
+}
+
+.precio-promo {
+    color: #d32f2f;
+    font-weight: bold;
+    font-size: 10px; /* Destacado, pero más sutil y elegante que antes */
+}

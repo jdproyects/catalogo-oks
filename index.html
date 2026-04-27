@@ -7,31 +7,27 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="catalogo" class="contenedor-catalogo">
         </div>
 
     <script>
-        // Configuramos la cantidad de páginas reales de tu PDF (ej. 60)
-        const totalPaginas = 60; 
         const contenedor = document.getElementById('catalogo');
 
-        // 1. Cargamos los datos de los precios
         fetch('datos.json')
             .then(response => response.json())
             .then(datos => {
+                // Obtenemos el número de la página más alta en el JSON
+                const maxPaginas = Math.max(...datos.map(d => d.pagina));
                 
-                // 2. Creamos cada página una debajo de otra
-                for (let i = 1; i <= totalPaginas; i++) {
+                for (let i = 1; i <= maxPaginas; i++) {
                     const divPagina = document.createElement('div');
                     divPagina.className = 'page';
                     
-                    // Imagen de la página
                     const img = document.createElement('img');
-                    img.src = `paginas/pagina_${i}.jpg`; // Ajusta la ruta a tus fotos
+                    img.src = `paginas/pagina_${i}.jpg`; 
                     divPagina.appendChild(img);
 
-                    // 3. Buscamos qué precios pertenecen a esta página
+                    // Filtrar precios de esta página
                     const preciosPagina = datos.filter(d => d.pagina === i);
                     
                     preciosPagina.forEach(item => {

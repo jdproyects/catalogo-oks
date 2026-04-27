@@ -1,41 +1,34 @@
 import pandas as pd
 import fitz  # PyMuPDF
 import json
+import re
 
 def limpiar_precio_sucio(valor):
-    if pd.isna(valor) or valor == "":
-        return ""
+    if pd.isna(valor) or valor == "": return ""
     valor_str = str(valor).strip()
-    if valor_str.endswith('.0'):
-        valor_str = valor_str[:-2]
+    if valor_str.endswith('.0'): valor_str = valor_str[:-2]
     if '.' in valor_str:
-        partes = valor_str.rsplit('.', 1) 
-        enteros = partes[0]
-        decimales = partes[1][:2] 
-        return f"{enteros},{decimales}"
+        partes = valor_str.rsplit('.', 1)
+        return f"{partes[0]},{partes[1][:2]}"
     elif len(valor_str) >= 3:
-        valor_truncado = valor_str[:-1] 
-        enteros = valor_truncado[:-2]
-        decimales = valor_truncado[-2:]
-        try:
-            enteros_fmt = f"{int(enteros):,}".replace(',', '.')
-            return f"{enteros_fmt},{decimales}"
-        except ValueError:
-            return f"{enteros},{decimales}"
+        enteros = valor_str[:-2]
+        decimales = valor_str[-2:]
+        return f"{enteros},{decimales}"
     return valor_str
 
 def formatear_promo_limpia(valor):
-    if pd.isna(valor) or valor == "":
-        return ""
+    if pd.isna(valor) or valor == "": return ""
     try:
         numero = float(valor)
         return f"{numero:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
-    except:
-        return str(valor).strip()
+    except: return str(valor).strip()
+
+def normalizar_codigo(texto):
+    """Elimina todo lo que no sea letras o números para comparar mejor"""
+    return re.sub(r'[^A-Z0-9]', '', str(texto).upper())
 
 # 1. Cargar Excel
 print("Cargando base de datos...")
-# Importante: forzar que 'Codigo de Producto' se lea como texto para evitar que ignore ceros a la izquierda
 df = pd.read_excel('precios.xlsx', dtype={'Codigo de Producto': str})
 
 # 2. Abrir PDF
@@ -43,95 +36,67 @@ doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-# 3. Procesar
-print("Escaneando páginas con Inteligencia de Contexto Estricta (Anti-Gramaje)...")
+print(f"Procesando {len(doc)} páginas...")
+
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
-    palabras = pagina.get_text("words") 
+    palabras = pagina.get_text("words") # [x0, y0, x1, y1, "texto", block_no, line_no, word_no]
     
-    tags_pagina = [] 
+    tags_pagina = []
     
     for index, row in df.iterrows():
         try:
-            precio_valor = float(row['Precio'])
-        except:
-            precio_valor = 0
+            if float(row['Precio']) <= 1: continue
+        except: continue
             
-        if precio_valor <= 1:
-            continue
-            
-        codigo = str(row['Codigo de Producto']).strip().upper()
+        codigo_excel = normalizar_codigo(row['Codigo de Producto'])
         
-        # AQUI CAMBIAMOS PARA PODER VER LAS PALABRAS ANTERIORES
-        for i, palabra in enumerate(palabras):
-            texto_bruto = palabra[4]
-            # Limpiamos también paréntesis por si dice "(200" o "200)"
-            texto_limpio = texto_bruto.strip('.,;:)(') 
-            texto_comparar = texto_limpio.upper().replace('COD.', '').replace('COD', '').strip('.:,;- ')
+        for i, p in enumerate(palabras):
+            texto_pdf_original = p[4]
+            texto_pdf_limpio = normalizar_codigo(texto_pdf_original)
             
-            if texto_limpio.upper() == codigo or texto_comparar == codigo:
+            # Si el texto del PDF contiene el código del Excel (ej: "COD.851" contiene "851")
+            if codigo_excel in texto_pdf_limpio:
                 
-                # --- NUEVA MAGIA ANTI FALSOS POSITIVOS DE GRAMAJE ---
-                es_falso_positivo = False
-                
-                # REGLA: Si es un código corto (4 números o menos, propenso a confundirse con cantidades)
-                # Y la palabra actual NO contiene "COD" (para dejar pasar casos como "COD.200")...
-                if len(codigo) <= 4 and "COD" not in texto_bruto.upper() and "CÓD" not in texto_bruto.upper():
+                # REGLA DE SEGURIDAD PARA NÚMEROS CORTOS
+                if len(codigo_excel) <= 4:
+                    # Buscamos "COD" en la misma palabra o en las 2 anteriores
+                    contexto = texto_pdf_original.upper()
+                    if i > 0: contexto += palabras[i-1][4].upper()
+                    if i > 1: contexto += palabras[i-2][4].upper()
                     
-                    # Miramos obligatoriamente la palabra anterior en el PDF
-                    # (Si no hay palabra anterior, i > 0 es Falso, entonces "" )
-                    palabra_ant1 = palabras[i-1][4].upper() if i > 0 else ""
-                    
-                    # Si la palabra anterior (Cod: o Cod.) no está, es un peso o cantidad
-                    # Usamos 'COD' in palabra_ant1 para que sea más robusto (Cod: Cod. Cod)
-                    if "COD" not in palabra_ant1 and "CÓD" not in palabra_ant1:
-                        es_falso_positivo = True
-                
-                # Si resultó ser una cantidad engañosa, saltamos y seguimos buscando
-                if es_falso_positivo:
-                    continue
-                
-                # Si pasó la prueba, procedemos normal
-                precio_normal = limpiar_precio_sucio(row['Precio'])
-                precio_promo = formatear_promo_limpia(row['Precio Promo'])
-                tiene_promo = not pd.isna(row['Precio Promo'])
-                
-                ancho = pagina.rect.width
-                alto = pagina.rect.height
-                
+                    if "COD" not in contexto and "CÓD" not in contexto:
+                        continue # Es un gramaje o cantidad, lo ignoramos
+
+                # Si pasó el filtro, guardamos
                 item = {
                     "pagina": num_pagina + 1,
-                    "codigo": codigo,
-                    "precio_normal": precio_normal,
-                    "precio_promo": precio_promo if tiene_promo else "",
-                    "x": round((palabra[0] / ancho) * 100, 2),
-                    "y": round((palabra[1] / alto) * 100, 2)
+                    "codigo": row['Codigo de Producto'],
+                    "precio_normal": limpiar_precio_sucio(row['Precio']),
+                    "precio_promo": formatear_promo_limpia(row['Precio Promo']),
+                    "x": round((p[0] / pagina.rect.width) * 100, 2),
+                    "y": round((p[1] / pagina.rect.height) * 100, 2)
                 }
                 tags_pagina.append(item)
-                codigos_encontrados.add(codigo)
-                
-    # --- MAGIA ANTI-SUPERPOSICIÓN ---
-    tags_filtrados = []
-    for nuevo_tag in tags_pagina:
-        colision = False
-        for i, tag_existente in enumerate(tags_filtrados):
-            dist_x = abs(nuevo_tag['x'] - tag_existente['x'])
-            dist_y = abs(nuevo_tag['y'] - tag_existente['y'])
-            
-            if dist_x < 8 and dist_y < 6:
-                colision = True
-                if nuevo_tag['precio_promo'] != "" and tag_existente['precio_promo'] == "":
-                    tags_filtrados[i] = nuevo_tag
-                break 
-                
-        if not colision:
-            tags_filtrados.append(nuevo_tag)
-            
-    resultados.extend(tags_filtrados)
+                codigos_encontrados.add(row['Codigo de Producto'])
+
+    # Anti-superposición
+    filtrados = []
+    for nt in tags_pagina:
+        es_duplicado = False
+        for ft in filtrados:
+            if abs(nt['x'] - ft['x']) < 7 and abs(nt['y'] - ft['y']) < 5:
+                es_duplicado = True
+                if nt['precio_promo'] and not ft['precio_promo']:
+                    ft.update(nt) # Preferir el que tiene promo
+                break
+        if not es_duplicado: filtrados.append(nt)
+    
+    resultados.extend(filtrados)
 
 # 4. Guardar
 with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Listo! Se indexaron {len(codigos_encontrados)} códigos (ignorando cantidades engañosas).")
+print(f"¡Hecho! {len(codigos_encontrados)} productos indexados en {len(doc)} páginas.")

@@ -60,7 +60,7 @@ doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-print(f"Procesando {len(doc)} páginas...")
+print(f"Procesando {len(doc)} páginas con Radar de Súper Precisión...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
@@ -74,9 +74,7 @@ for num_pagina in range(len(doc)):
         codigo_detectado = ""
         
         if "COD" in texto_limpio or "CÓD" in texto_limpio:
-            # CORRECCIÓN: Forma súper directa de aislar el número
             posible = texto_limpio.replace("COD:", "").replace("COD", "").replace("CÓD:", "").replace("CÓD", "")
-            
             if posible: 
                 codigo_detectado = posible
             elif i + 1 < len(palabras):
@@ -100,12 +98,15 @@ for num_pagina in range(len(doc)):
                 }
                 tags_pagina.append(item)
 
+    # --- AJUSTE DE PRECISIÓN RADAR ---
     grupos = []
     for tag in tags_pagina:
         agregado = False
         for grupo in grupos:
             ref = grupo[0]
-            if abs(tag['x'] - ref['x']) < 15 and abs(tag['y'] - ref['y']) < 3:
+            # Reducimos la tolerancia vertical a 0.8 (menos de 1%)
+            # Esto permite que cada línea de la Yerba tenga su propio precio
+            if abs(tag['x'] - ref['x']) < 10 and abs(tag['y'] - ref['y']) < 0.8:
                 grupo.append(tag)
                 agregado = True
                 break
@@ -114,9 +115,9 @@ for num_pagina in range(len(doc)):
             
     for grupo in grupos:
         validos = [t for t in grupo if t['precio_num'] > 0]
-        if not validos:
-            continue
+        if not validos: continue
             
+        # Prioridad: Promo > Precio más alto
         validos.sort(key=lambda x: (bool(x['precio_promo']), x['precio_num']), reverse=True)
         ganador = validos[0]
         
@@ -128,4 +129,4 @@ with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos.")
+print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos. Ahora cada línea debería tener su precio.")

@@ -24,7 +24,6 @@ def limpiar_precio_sucio(valor):
     return v
 
 def obtener_precio_num(valor):
-    """Convierte a número para poder evaluar > 0"""
     if pd.isna(valor) or valor == "": return 0.0
     v = str(valor).strip()
     if v.endswith('.0'): v = v[:-2]
@@ -61,7 +60,7 @@ doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-print(f"Procesando {len(doc)} páginas con Radar de Precisión Quirúrgica...")
+print(f"Procesando {len(doc)} páginas...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
@@ -75,7 +74,9 @@ for num_pagina in range(len(doc)):
         codigo_detectado = ""
         
         if "COD" in texto_limpio or "CÓD" in texto_limpio:
-            posible = re.sub(r'CÓ?D:?', '', texto_limpio)
+            # CORRECCIÓN: Forma súper directa de aislar el número
+            posible = texto_limpio.replace("COD:", "").replace("COD", "").replace("CÓD:", "").replace("CÓD", "")
+            
             if posible: 
                 codigo_detectado = posible
             elif i + 1 < len(palabras):
@@ -99,14 +100,11 @@ for num_pagina in range(len(doc)):
                 }
                 tags_pagina.append(item)
 
-    # --- LA CORRECCIÓN CRÍTICA ---
     grupos = []
     for tag in tags_pagina:
         agregado = False
         for grupo in grupos:
             ref = grupo[0]
-            # Reducido de 15% a 3% vertical (dy < 3). 
-            # ¡Ahora solo agrupa códigos que estén en el mismo renglón o pegaditos abajo!
             if abs(tag['x'] - ref['x']) < 15 and abs(tag['y'] - ref['y']) < 3:
                 grupo.append(tag)
                 agregado = True
@@ -130,4 +128,4 @@ with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos únicos, respetando el espacio de cada uno.")
+print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos.")

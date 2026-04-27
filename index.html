@@ -12,14 +12,16 @@
 
     <script>
         const contenedor = document.getElementById('catalogo');
+        
+        // El número total de páginas de tu PDF. Esto asegura que NUNCA 
+        // quede la pantalla negra, sin importar lo que pase con los precios.
+        const totalPaginasPDF = 92; 
 
-        fetch('datos.json')
+        fetch('datos.json?v=' + new Date().getTime())
             .then(response => response.json())
             .then(datos => {
-                // Obtenemos el número de la página más alta en el JSON
-                const maxPaginas = Math.max(...datos.map(d => d.pagina));
                 
-                for (let i = 1; i <= maxPaginas; i++) {
+                for (let i = 1; i <= totalPaginasPDF; i++) {
                     const divPagina = document.createElement('div');
                     divPagina.className = 'page';
                     
@@ -27,29 +29,41 @@
                     img.src = `paginas/pagina_${i}.jpg`; 
                     divPagina.appendChild(img);
 
-                    // Filtrar precios de esta página
-                    const preciosPagina = datos.filter(d => d.pagina === i);
-                    
-                    preciosPagina.forEach(item => {
-                        const etiqueta = document.createElement('div');
-                        etiqueta.className = 'etiqueta-precio';
-                        etiqueta.style.left = item.x + '%';
-                        etiqueta.style.top = item.y + '%';
-
-                        let contenido = '';
-                        if (item.precio_promo) {
-                            contenido = `
-                                <span class="precio-normal tachado">$ ${item.precio_normal}</span>
-                                <span class="precio-promo">$ ${item.precio_promo}</span>
-                            `;
-                        } else {
-                            contenido = `<span class="precio-normal">$ ${item.precio_normal}</span>`;
-                        }
+                    if (datos && datos.length > 0) {
+                        const preciosPagina = datos.filter(d => d.pagina === i);
                         
-                        etiqueta.innerHTML = contenido;
-                        divPagina.appendChild(etiqueta);
-                    });
+                        preciosPagina.forEach(item => {
+                            const etiqueta = document.createElement('div');
+                            etiqueta.className = 'etiqueta-precio';
+                            etiqueta.style.left = item.x + '%';
+                            etiqueta.style.top = item.y + '%';
 
+                            let contenido = '';
+                            if (item.precio_promo) {
+                                contenido = `
+                                    <span class="precio-normal tachado">$ ${item.precio_normal}</span>
+                                    <span class="precio-promo">$ ${item.precio_promo}</span>
+                                `;
+                            } else {
+                                contenido = `<span class="precio-normal">$ ${item.precio_normal}</span>`;
+                            }
+                            
+                            etiqueta.innerHTML = contenido;
+                            divPagina.appendChild(etiqueta);
+                        });
+                    }
+                    contenedor.appendChild(divPagina);
+                }
+            })
+            .catch(error => {
+                console.error("Error cargando JSON:", error);
+                // Si el JSON se rompe, igual mostramos las 92 fotos puras
+                for (let i = 1; i <= totalPaginasPDF; i++) {
+                    const divPagina = document.createElement('div');
+                    divPagina.className = 'page';
+                    const img = document.createElement('img');
+                    img.src = `paginas/pagina_${i}.jpg`; 
+                    divPagina.appendChild(img);
                     contenedor.appendChild(divPagina);
                 }
             });

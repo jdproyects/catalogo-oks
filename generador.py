@@ -5,13 +5,34 @@ import re
 
 def limpiar_precio_sucio(valor):
     if pd.isna(valor) or valor == "": return ""
-    v = str(valor).strip()
-    if v.endswith('.0'): v = v[:-2]
-    if len(v) > 0: v = v[:-1]
-    if '.' in v:
-        partes = v.rsplit('.', 1)
-        v = f"{partes[0]},{partes[1]}"
-    return v
+    valor_str = str(valor).strip()
+
+    # Si Python lo lee con .0 al final por error, lo limpiamos
+    if valor_str.endswith('.0'):
+        valor_str = valor_str[:-2]
+
+    # Si trae puntos de origen (ej "5.346.447"), se los quitamos para procesarlo puro
+    if '.' in valor_str:
+        valor_str = valor_str.replace('.', '')
+
+    # A este punto, tenemos un número puro (ej "5346447" o "5588000")
+    if len(valor_str) >= 3:
+        # REGLA 1: Eliminamos el último dígito de la derecha
+        valor_truncado = valor_str[:-1]
+
+        # REGLA 2: Separamos los enteros y los dos últimos serán los decimales
+        enteros = valor_truncado[:-2]
+        decimales = valor_truncado[-2:]
+
+        # Le damos formato de miles con puntos y coma para decimales
+        try:
+            if enteros == "": enteros = "0"
+            enteros_fmt = f"{int(enteros):,}".replace(',', '.')
+            return f"{enteros_fmt},{decimales}"
+        except ValueError:
+            return f"{enteros},{decimales}"
+
+    return valor_str
 
 def formatear_promo_limpia(valor):
     if pd.isna(valor) or valor == "": return ""
@@ -29,7 +50,7 @@ doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-print(f"Procesando {len(doc)} páginas con la regla estricta...")
+print(f"Procesando {len(doc)} páginas con la regla estricta de COD y formateo de precios...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
@@ -51,13 +72,11 @@ for num_pagina in range(len(doc)):
             
             if codigo_excel == texto_pdf_limpio or codigo_excel == texto_sin_cod:
                 
-                # --- LA REGLA DE ORO ---
-                # SIEMPRE tiene que estar asociado a la palabra COD o CÓD. Sin excepciones.
+                # --- LA REGLA ESTRICTA DE "COD" ---
                 contexto = texto_pdf_original.upper()
                 if i > 0: contexto += palabras[i-1][4].upper()
                 if i > 1: contexto += palabras[i-2][4].upper()
                 
-                # Si no encontramos "COD", es un gramaje, cantidad o error. Lo ignoramos.
                 if "COD" not in contexto and "CÓD" not in contexto:
                     continue 
 
@@ -89,4 +108,4 @@ with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos bajo la regla estricta.")
+print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos.")

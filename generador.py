@@ -4,35 +4,27 @@ import json
 import re
 
 def limpiar_precio_sucio(valor):
-    if pd.isna(valor) or valor == "": return ""
-    valor_str = str(valor).strip()
+    if pd.isna(valor) or valor == "": 
+        return ""
+    
+    # Convertimos a texto y limpiamos espacios
+    v = str(valor).strip()
+    
+    # Si Python leyó un ".0" al final por error de Excel, lo quitamos primero
+    if v.endswith('.0'):
+        v = v[:-2]
 
-    # Si Python lo lee con .0 al final por error, lo limpiamos
-    if valor_str.endswith('.0'):
-        valor_str = valor_str[:-2]
+    # REGLA 1: Eliminar el último número de la derecha
+    if len(v) > 0:
+        v = v[:-1]
 
-    # Si trae puntos de origen (ej "5.346.447"), se los quitamos para procesarlo puro
-    if '.' in valor_str:
-        valor_str = valor_str.replace('.', '')
-
-    # A este punto, tenemos un número puro (ej "5346447" o "5588000")
-    if len(valor_str) >= 3:
-        # REGLA 1: Eliminamos el último dígito de la derecha
-        valor_truncado = valor_str[:-1]
-
-        # REGLA 2: Separamos los enteros y los dos últimos serán los decimales
-        enteros = valor_truncado[:-2]
-        decimales = valor_truncado[-2:]
-
-        # Le damos formato de miles con puntos y coma para decimales
-        try:
-            if enteros == "": enteros = "0"
-            enteros_fmt = f"{int(enteros):,}".replace(',', '.')
-            return f"{enteros_fmt},{decimales}"
-        except ValueError:
-            return f"{enteros},{decimales}"
-
-    return valor_str
+    # REGLA 2: Cambiar el último punto por una coma
+    if '.' in v:
+        # rsplit('.', 1) separa la cadena en dos partes desde el último punto
+        partes = v.rsplit('.', 1)
+        v = f"{partes[0]},{partes[1]}"
+        
+    return v
 
 def formatear_promo_limpia(valor):
     if pd.isna(valor) or valor == "": return ""

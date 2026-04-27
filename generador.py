@@ -10,24 +10,25 @@ def limpiar_precio_sucio(valor):
     # Quitamos el .0 si Python lo lee como decimal
     if v.endswith('.0'): v = v[:-2]
     
-    # Limpiamos cualquier punto o coma accidental que venga del Excel
+    # Limpiamos cualquier punto o coma accidental
     v = v.replace('.', '').replace(',', '')
     
-    # Aquí hacemos la MAGIA MATEMÁTICA con el número puro (ej: "5076417")
+    # MAGIA MATEMÁTICA
     if len(v) >= 3:
-        v = v[:-1] # REGLA 1: Quitamos el último dígito -> queda "507641"
-        
-        enteros = v[:-2] # Todo menos los últimos dos -> "5076"
-        decimales = v[-2:] # Los últimos dos -> "41"
+        v = v[:-1] # Quitamos el último dígito
+        enteros = v[:-2] # Los miles
+        decimales = v[-2:] # Los centavos
         
         if enteros == "": enteros = "0"
         
-        # REGLA 2: Le ponemos el punto de miles a los enteros
-        enteros_fmt = f"{int(enteros):,}".replace(',', '.') # Queda "5.076"
-        
-        # Unimos todo con la coma
-        return f"{enteros_fmt},{decimales}" # Resultado: "5.076,41"
-        
+        try:
+            # Intentamos ponerle el punto de miles
+            enteros_fmt = f"{int(enteros):,}".replace(',', '.')
+            return f"{enteros_fmt},{decimales}"
+        except:
+            # Si Excel mandó letras raras y Python falla, lo salvamos así:
+            return f"{enteros},{decimales}"
+            
     return v
 
 def formatear_promo_limpia(valor):

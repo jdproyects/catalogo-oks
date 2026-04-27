@@ -43,12 +43,12 @@ resultados = []
 codigos_encontrados = set()
 
 # 3. Procesar
-print("Escaneando páginas con filtro inteligente y anti-superposición...")
+print("Escaneando páginas con Inteligencia de Contexto (Anti Falsos Positivos)...")
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
     palabras = pagina.get_text("words") 
     
-    tags_pagina = [] # GUARDAMOS LOS PRECIOS DE ESTA PÁGINA AQUÍ PRIMERO
+    tags_pagina = [] 
     
     for index, row in df.iterrows():
         try:
@@ -61,11 +61,36 @@ for num_pagina in range(len(doc)):
             
         codigo = str(row['Codigo de Producto']).strip().upper()
         
-        for palabra in palabras:
-            texto_limpio = palabra[4].strip('.,;:') 
+        # AQUI CAMBIAMOS PARA PODER VER LAS PALABRAS ANTERIORES
+        for i, palabra in enumerate(palabras):
+            texto_bruto = palabra[4]
+            # Limpiamos también paréntesis por si dice "(200" o "200)"
+            texto_limpio = texto_bruto.strip('.,;:)(') 
             texto_comparar = texto_limpio.upper().replace('COD.', '').replace('COD', '').strip('.:,;- ')
             
             if texto_limpio.upper() == codigo or texto_comparar == codigo:
+                
+                # --- MAGIA ANTI FALSOS POSITIVOS ---
+                es_falso_positivo = False
+                
+                # REGLA: Si es un código corto (4 números o menos, propenso a confundirse con cantidades)
+                # Y la palabra actual NO contiene "COD" (para dejar pasar casos como "COD.200")...
+                if len(codigo) <= 4 and "COD" not in texto_bruto.upper() and "CÓD" not in texto_bruto.upper():
+                    
+                    # Miramos hasta 2 palabras hacia atrás en el PDF
+                    palabra_ant1 = palabras[i-1][4].upper() if i > 0 else ""
+                    palabra_ant2 = palabras[i-2][4].upper() if i > 1 else ""
+                    
+                    # Si NINGUNA de las dos palabras anteriores es "COD", entonces es solo una cantidad.
+                    if "COD" not in palabra_ant1 and "CÓD" not in palabra_ant1 and \
+                       "COD" not in palabra_ant2 and "CÓD" not in palabra_ant2:
+                        es_falso_positivo = True
+                
+                # Si resultó ser una cantidad engañosa, saltamos y seguimos buscando
+                if es_falso_positivo:
+                    continue
+                
+                # Si pasó la prueba, procedemos normal
                 precio_normal = limpiar_precio_sucio(row['Precio'])
                 precio_promo = formatear_promo_limpia(row['Precio Promo'])
                 tiene_promo = not pd.isna(row['Precio Promo'])
@@ -89,22 +114,18 @@ for num_pagina in range(len(doc)):
     for nuevo_tag in tags_pagina:
         colision = False
         for i, tag_existente in enumerate(tags_filtrados):
-            # Medimos qué tan cerca están en la hoja (en porcentaje)
             dist_x = abs(nuevo_tag['x'] - tag_existente['x'])
             dist_y = abs(nuevo_tag['y'] - tag_existente['y'])
             
-            # Si están a menos de 8% de distancia horizontal y 6% vertical, son del mismo producto
             if dist_x < 8 and dist_y < 6:
                 colision = True
-                # PRIORIDAD: Si el nuevo tiene promo y el viejo no, lo pisamos y nos quedamos con el de Promo
                 if nuevo_tag['precio_promo'] != "" and tag_existente['precio_promo'] == "":
                     tags_filtrados[i] = nuevo_tag
-                break # Dejamos de buscar porque ya colisionó con uno
+                break 
                 
         if not colision:
             tags_filtrados.append(nuevo_tag)
             
-    # Ahora sí, agregamos los tags limpios y sin repetir a la lista final
     resultados.extend(tags_filtrados)
 
 # 4. Guardar
@@ -112,4 +133,4 @@ with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Listo! Se indexaron {len(codigos_encontrados)} códigos y se eliminaron duplicados.")
+print(f"¡Listo! Se indexaron {len(codigos_encontrados)} códigos (ignorando cantidades engañosas).")

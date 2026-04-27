@@ -1,31 +1,39 @@
 body {
     background-color: #f0f0f0;
     margin: 0;
+    padding-top: 15px; /* Da un pequeño respiro arriba */
+    padding-bottom: 30px;
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    /* Eliminamos el align-items y el 100vh para permitir el scroll natural */
     font-family: Arial, sans-serif;
 }
 
 .contenedor-catalogo {
     width: 100%;
-    max-width: 1000px; /* Tamaño máximo del libro abierto */
+    max-width: 800px; /* Ancho ideal: 100% en celular, 800px en PC */
+    display: flex;
+    flex-direction: column; /* La magia que apila las hojas hacia abajo */
+    gap: 15px; /* El espacio en blanco entre una hoja y la siguiente */
 }
 
 /* Estilos de la página */
 .page {
     background-color: white;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
-    position: relative; /* Clave para posicionar los precios encima */
-    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Le da un efecto de tarjeta elegante */
+    position: relative; /* Súper importante para anclar los precios */
+    width: 100%;
 }
 
 .page img {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
+    display: block; /* Elimina un borde blanco fantasma que sale bajo las imágenes */
 }
+
+/* =========================================
+   ETIQUETAS DE PRECIO (Intactas)
+   ========================================= */
 
 /* La burbuja flotante del precio */
 .etiqueta-precio {
@@ -40,11 +48,7 @@ body {
     pointer-events: none;
     text-align: center;
     
-    /* LA SOLUCIÓN DEFINITIVA:
-       -50% en X: La centra perfectamente sobre la palabra del código.
-       calc(-100% - 5px) en Y: Alinea la base de TODAS las etiquetas 
-       exactamente 5 píxeles por encima del texto, sin importar 
-       si tienen 1 o 2 líneas de alto. */
+    /* LA SOLUCIÓN DEFINITIVA */
     transform: translate(-50%, calc(-100% - 5px)); 
 }
 

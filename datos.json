@@ -233,14 +233,6 @@
     },
     {
         "pagina": 6,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 17.61,
-        "y": 63.02
-    },
-    {
-        "pagina": 6,
         "codigo": "3140",
         "precio_normal": "5.588,00",
         "precio_promo": "",
@@ -398,14 +390,6 @@
         "precio_promo": "",
         "x": 32.4,
         "y": 64.69
-    },
-    {
-        "pagina": 7,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 18.71,
-        "y": 74.06
     },
     {
         "pagina": 7,
@@ -697,14 +681,6 @@
     },
     {
         "pagina": 9,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 21.08,
-        "y": 30.68
-    },
-    {
-        "pagina": 9,
         "codigo": "773",
         "precio_normal": "6.915,87",
         "precio_promo": "6.251,95",
@@ -814,14 +790,6 @@
         "precio_promo": "",
         "x": 80.21,
         "y": 74.17
-    },
-    {
-        "pagina": 10,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 16.87,
-        "y": 27.93
     },
     {
         "pagina": 10,
@@ -1049,14 +1017,6 @@
     },
     {
         "pagina": 14,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 80.18,
-        "y": 64.13
-    },
-    {
-        "pagina": 14,
         "codigo": "522",
         "precio_normal": "1.462,99",
         "precio_promo": "1.243,55",
@@ -1118,6 +1078,14 @@
         "precio_promo": "",
         "x": 42.02,
         "y": 89.26
+    },
+    {
+        "pagina": 14,
+        "codigo": "3767",
+        "precio_normal": "1.488,44",
+        "precio_promo": "",
+        "x": 77.97,
+        "y": 61.03
     },
     {
         "pagina": 14,
@@ -1609,14 +1577,6 @@
     },
     {
         "pagina": 21,
-        "codigo": "80",
-        "precio_normal": "4.500,18",
-        "precio_promo": "",
-        "x": 27.18,
-        "y": 30.41
-    },
-    {
-        "pagina": 21,
         "codigo": "3782",
         "precio_normal": "12.253,67",
         "precio_promo": "",
@@ -1669,6 +1629,14 @@
         "precio_normal": "18.507,55",
         "precio_promo": "",
         "x": 12.8,
+        "y": 27.45
+    },
+    {
+        "pagina": 21,
+        "codigo": "3441",
+        "precio_normal": "18.507,55",
+        "precio_promo": "",
+        "x": 30.36,
         "y": 27.45
     },
     {
@@ -2481,19 +2449,19 @@
     },
     {
         "pagina": 32,
-        "codigo": "200",
-        "precio_normal": "6.736,00",
-        "precio_promo": "2.999,99",
-        "x": 27.46,
-        "y": 31.55
-    },
-    {
-        "pagina": 32,
         "codigo": "850",
         "precio_normal": "1.267,06",
         "precio_promo": "1.102,34",
         "x": 9.84,
         "y": 33.43
+    },
+    {
+        "pagina": 32,
+        "codigo": "851",
+        "precio_normal": "639,72",
+        "precio_promo": "556,56",
+        "x": 26.6,
+        "y": 33.96
     },
     {
         "pagina": 32,
@@ -2649,22 +2617,6 @@
     },
     {
         "pagina": 33,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 43.16,
-        "y": 29.95
-    },
-    {
-        "pagina": 33,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 82.94,
-        "y": 29.06
-    },
-    {
-        "pagina": 33,
         "codigo": "4421",
         "precio_normal": "1.403,47",
         "precio_promo": "",
@@ -2697,6 +2649,14 @@
     },
     {
         "pagina": 33,
+        "codigo": "11302",
+        "precio_normal": "1.538,86",
+        "precio_promo": "1.446,53",
+        "x": 41.77,
+        "y": 32.37
+    },
+    {
+        "pagina": 33,
         "codigo": "11303",
         "precio_normal": "608,88",
         "precio_promo": "572,35",
@@ -2725,6 +2685,14 @@
         "precio_normal": "1.077,09",
         "precio_promo": "572,35",
         "x": 69.43,
+        "y": 31.48
+    },
+    {
+        "pagina": 33,
+        "codigo": "11307",
+        "precio_normal": "1.660,21",
+        "precio_promo": "1.560,60",
+        "x": 81.57,
         "y": 31.48
     },
     {
@@ -7500,14 +7468,6 @@
         "codigo": "500",
         "precio_normal": "8.971,04",
         "precio_promo": "8.971,04",
-        "x": 77.45,
-        "y": 26.85
-    },
-    {
-        "pagina": 80,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
         "x": 51.14,
         "y": 27.13
     },
@@ -7545,6 +7505,14 @@
     },
     {
         "pagina": 80,
+        "codigo": "500311",
+        "precio_normal": "19.374,79",
+        "precio_promo": "",
+        "x": 80.93,
+        "y": 32.81
+    },
+    {
+        "pagina": 80,
         "codigo": "500314",
         "precio_normal": "2.765,71",
         "precio_promo": "",
@@ -7553,11 +7521,11 @@
     },
     {
         "pagina": 80,
-        "codigo": "500317",
-        "precio_normal": "2.765,71",
+        "codigo": "500316",
+        "precio_normal": "4.975,44",
         "precio_promo": "",
-        "x": 81.05,
-        "y": 19.75
+        "x": 80.9,
+        "y": 23.66
     },
     {
         "pagina": 80,
@@ -7665,70 +7633,6 @@
     },
     {
         "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 60.77,
-        "y": 30.34
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 81.59,
-        "y": 30.34
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 16.97,
-        "y": 68.1
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 18.9,
-        "y": 86.09
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 39.03,
-        "y": 85.45
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 29.25,
-        "y": 85.45
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 34.79,
-        "y": 50.36
-    },
-    {
-        "pagina": 82,
-        "codigo": "500",
-        "precio_normal": "8.971,04",
-        "precio_promo": "8.971,04",
-        "x": 36.97,
-        "y": 68.54
-    },
-    {
-        "pagina": 82,
         "codigo": "3574",
         "precio_normal": "4.981,76",
         "precio_promo": "4.732,68",
@@ -7769,6 +7673,22 @@
     },
     {
         "pagina": 82,
+        "codigo": "3644",
+        "precio_normal": "5.516,94",
+        "precio_promo": "",
+        "x": 59.69,
+        "y": 32.76
+    },
+    {
+        "pagina": 82,
+        "codigo": "3645",
+        "precio_normal": "5.516,94",
+        "precio_promo": "",
+        "x": 80.51,
+        "y": 32.76
+    },
+    {
+        "pagina": 82,
         "codigo": "3646",
         "precio_normal": "10.322,72",
         "precio_promo": "",
@@ -7805,6 +7725,46 @@
         "precio_normal": "6.499,99",
         "precio_promo": "4.875,00",
         "x": 8.58,
+        "y": 88.51
+    },
+    {
+        "pagina": 82,
+        "codigo": "6704",
+        "precio_normal": "4.159,99",
+        "precio_promo": "3.119,99",
+        "x": 33.71,
+        "y": 52.77
+    },
+    {
+        "pagina": 82,
+        "codigo": "6705",
+        "precio_normal": "4.744,99",
+        "precio_promo": "3.558,74",
+        "x": 35.9,
+        "y": 70.95
+    },
+    {
+        "pagina": 82,
+        "codigo": "6706",
+        "precio_normal": "5.667,99",
+        "precio_promo": "4.250,99",
+        "x": 15.9,
+        "y": 70.51
+    },
+    {
+        "pagina": 82,
+        "codigo": "6707",
+        "precio_normal": "4.809,99",
+        "precio_promo": "3.607,49",
+        "x": 37.95,
+        "y": 87.86
+    },
+    {
+        "pagina": 82,
+        "codigo": "6708",
+        "precio_normal": "3.418,98",
+        "precio_promo": "2.564,24",
+        "x": 17.82,
         "y": 88.51
     },
     {

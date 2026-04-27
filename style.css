@@ -27,7 +27,7 @@ body {
 }
 
 /* =========================================
-   ETIQUETAS DE PRECIO (Optimizadas para Móvil)
+   ETIQUETAS DE PRECIO (Optimización Legibilidad Móvil)
    ========================================= */
 
 .etiqueta-precio {
@@ -47,7 +47,11 @@ body {
     font-size: 9px; 
     line-height: 1.1; /* Mantiene los textos pegaditos */
     
-    transform: translate(-50%, calc(-100% - 3px));
+    /* LA SOLUCIÓN DEFINITIVA DE ALTURA:
+       Incrementamos el offset vertical a 25px para que la etiqueta suba
+       y no tape el nombre del producto, cubriendo parte de la imagen. */
+    transform: translate(-50%, calc(-100% - 25px));
+    
     pointer-events: none;
     text-align: center;
     z-index: 5;
@@ -70,4 +74,23 @@ body {
     color: #d32f2f;
     font-weight: bold;
     font-size: 10px; /* Destacado, pero más sutil y elegante que antes */
+}
+
+/* =========================================
+   REGLAS EXCLUSIVAS PARA PANTALLAS DE CELULAR
+   ========================================= */
+@media (max-width: 600px) {
+    .etiqueta-precio {
+        padding: 1px 3px; /* Relleno aún más pequeño */
+        font-size: 6px;   /* Letra base minúscula */
+    }
+
+    .precio-normal.tachado {
+        font-size: 5px;   /* El tachado casi invisible pero legible */
+        margin-bottom: 0px;
+    }
+
+    .precio-promo {
+        font-size: 7px;   /* El rojo de promo, destacado pero sin estorbar */
+    }
 }

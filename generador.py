@@ -35,6 +35,7 @@ def formatear_promo_limpia(valor):
 
 # 1. Cargar Excel
 print("Cargando base de datos...")
+# Importante: forzar que 'Codigo de Producto' se lea como texto para evitar que ignore ceros a la izquierda
 df = pd.read_excel('precios.xlsx', dtype={'Codigo de Producto': str})
 
 # 2. Abrir PDF
@@ -43,7 +44,7 @@ resultados = []
 codigos_encontrados = set()
 
 # 3. Procesar
-print("Escaneando páginas con Inteligencia de Contexto (Anti Falsos Positivos)...")
+print("Escaneando páginas con Inteligencia de Contexto Estricta (Anti-Gramaje)...")
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
     palabras = pagina.get_text("words") 
@@ -70,20 +71,20 @@ for num_pagina in range(len(doc)):
             
             if texto_limpio.upper() == codigo or texto_comparar == codigo:
                 
-                # --- MAGIA ANTI FALSOS POSITIVOS ---
+                # --- NUEVA MAGIA ANTI FALSOS POSITIVOS DE GRAMAJE ---
                 es_falso_positivo = False
                 
                 # REGLA: Si es un código corto (4 números o menos, propenso a confundirse con cantidades)
                 # Y la palabra actual NO contiene "COD" (para dejar pasar casos como "COD.200")...
                 if len(codigo) <= 4 and "COD" not in texto_bruto.upper() and "CÓD" not in texto_bruto.upper():
                     
-                    # Miramos hasta 2 palabras hacia atrás en el PDF
+                    # Miramos obligatoriamente la palabra anterior en el PDF
+                    # (Si no hay palabra anterior, i > 0 es Falso, entonces "" )
                     palabra_ant1 = palabras[i-1][4].upper() if i > 0 else ""
-                    palabra_ant2 = palabras[i-2][4].upper() if i > 1 else ""
                     
-                    # Si NINGUNA de las dos palabras anteriores es "COD", entonces es solo una cantidad.
-                    if "COD" not in palabra_ant1 and "CÓD" not in palabra_ant1 and \
-                       "COD" not in palabra_ant2 and "CÓD" not in palabra_ant2:
+                    # Si la palabra anterior (Cod: o Cod.) no está, es un peso o cantidad
+                    # Usamos 'COD' in palabra_ant1 para que sea más robusto (Cod: Cod. Cod)
+                    if "COD" not in palabra_ant1 and "CÓD" not in palabra_ant1:
                         es_falso_positivo = True
                 
                 # Si resultó ser una cantidad engañosa, saltamos y seguimos buscando

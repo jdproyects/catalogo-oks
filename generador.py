@@ -4,25 +4,29 @@ import json
 import re
 
 def limpiar_precio_sucio(valor):
-    if pd.isna(valor) or valor == "": 
-        return ""
-    
-    # Convertimos a texto y limpiamos espacios
+    if pd.isna(valor) or valor == "": return ""
     v = str(valor).strip()
     
-    # Si Python leyó un ".0" al final por error de Excel, lo quitamos primero
-    if v.endswith('.0'):
-        v = v[:-2]
-
-    # REGLA 1: Eliminar el último número de la derecha
-    if len(v) > 0:
-        v = v[:-1]
-
-    # REGLA 2: Cambiar el último punto por una coma
-    if '.' in v:
-        # rsplit('.', 1) separa la cadena en dos partes desde el último punto
-        partes = v.rsplit('.', 1)
-        v = f"{partes[0]},{partes[1]}"
+    # Quitamos el .0 si Python lo lee como decimal
+    if v.endswith('.0'): v = v[:-2]
+    
+    # Limpiamos cualquier punto o coma accidental que venga del Excel
+    v = v.replace('.', '').replace(',', '')
+    
+    # Aquí hacemos la MAGIA MATEMÁTICA con el número puro (ej: "5076417")
+    if len(v) >= 3:
+        v = v[:-1] # REGLA 1: Quitamos el último dígito -> queda "507641"
+        
+        enteros = v[:-2] # Todo menos los últimos dos -> "5076"
+        decimales = v[-2:] # Los últimos dos -> "41"
+        
+        if enteros == "": enteros = "0"
+        
+        # REGLA 2: Le ponemos el punto de miles a los enteros
+        enteros_fmt = f"{int(enteros):,}".replace(',', '.') # Queda "5.076"
+        
+        # Unimos todo con la coma
+        return f"{enteros_fmt},{decimales}" # Resultado: "5.076,41"
         
     return v
 
@@ -42,7 +46,7 @@ doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-print(f"Procesando {len(doc)} páginas con la regla estricta de COD y formateo de precios...")
+print(f"Procesando {len(doc)} páginas...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
@@ -63,8 +67,6 @@ for num_pagina in range(len(doc)):
             texto_sin_cod = texto_pdf_limpio.replace("COD", "")
             
             if codigo_excel == texto_pdf_limpio or codigo_excel == texto_sin_cod:
-                
-                # --- LA REGLA ESTRICTA DE "COD" ---
                 contexto = texto_pdf_original.upper()
                 if i > 0: contexto += palabras[i-1][4].upper()
                 if i > 1: contexto += palabras[i-2][4].upper()

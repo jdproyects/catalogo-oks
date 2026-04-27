@@ -5,16 +5,13 @@ import re
 
 def limpiar_precio_sucio(valor):
     if pd.isna(valor) or valor == "": return ""
-    valor_str = str(valor).strip()
-    if valor_str.endswith('.0'): valor_str = valor_str[:-2]
-    if '.' in valor_str:
-        partes = valor_str.rsplit('.', 1)
-        return f"{partes[0]},{partes[1][:2]}"
-    elif len(valor_str) >= 3:
-        enteros = valor_str[:-2]
-        decimales = valor_str[-2:]
-        return f"{enteros},{decimales}"
-    return valor_str
+    v = str(valor).strip()
+    if v.endswith('.0'): v = v[:-2]
+    if len(v) > 0: v = v[:-1]
+    if '.' in v:
+        partes = v.rsplit('.', 1)
+        v = f"{partes[0]},{partes[1]}"
+    return v
 
 def formatear_promo_limpia(valor):
     if pd.isna(valor) or valor == "": return ""
@@ -24,19 +21,15 @@ def formatear_promo_limpia(valor):
     except: return str(valor).strip()
 
 def normalizar_codigo(texto):
-    """Elimina todo lo que no sea letras o números para comparar mejor"""
     return re.sub(r'[^A-Z0-9]', '', str(texto).upper())
 
-# 1. Cargar Excel
 print("Cargando base de datos...")
 df = pd.read_excel('precios.xlsx', dtype={'Codigo de Producto': str})
-
-# 2. Abrir PDF
 doc = fitz.open('catalogo.pdf')
 resultados = []
 codigos_encontrados = set()
 
-print(f"Procesando {len(doc)} páginas...")
+print(f"Procesando {len(doc)} páginas con la regla estricta...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
@@ -45,37 +38,29 @@ for num_pagina in range(len(doc)):
     tags_pagina = []
     
     for index, row in df.iterrows():
-        try:
-            if float(row['Precio']) <= 1: continue
-        except: continue
+        precio_raw = str(row['Precio']).strip()
+        if not precio_raw or precio_raw in ["0", "0.0", "0,00"]: continue
             
         codigo_excel = normalizar_codigo(row['Codigo de Producto'])
-        
-        # --- NUEVO ESCUDO: Evitar códigos vacíos que rompen todo ---
-        if not codigo_excel: 
-            continue
+        if not codigo_excel: continue
         
         for i, p in enumerate(palabras):
             texto_pdf_original = p[4]
             texto_pdf_limpio = normalizar_codigo(texto_pdf_original)
-            
-            # Removemos la palabra COD para comparar solo el número puro
             texto_sin_cod = texto_pdf_limpio.replace("COD", "")
             
-            # --- AQUÍ ESTABA EL ERROR FATAL ---
-            # Ahora exigimos COINCIDENCIA EXACTA
             if codigo_excel == texto_pdf_limpio or codigo_excel == texto_sin_cod:
                 
-                # REGLA DE SEGURIDAD PARA NÚMEROS CORTOS
-                if len(codigo_excel) <= 4:
-                    contexto = texto_pdf_original.upper()
-                    if i > 0: contexto += palabras[i-1][4].upper()
-                    if i > 1: contexto += palabras[i-2][4].upper()
-                    
-                    if "COD" not in contexto and "CÓD" not in contexto:
-                        continue 
+                # --- LA REGLA DE ORO ---
+                # SIEMPRE tiene que estar asociado a la palabra COD o CÓD. Sin excepciones.
+                contexto = texto_pdf_original.upper()
+                if i > 0: contexto += palabras[i-1][4].upper()
+                if i > 1: contexto += palabras[i-2][4].upper()
+                
+                # Si no encontramos "COD", es un gramaje, cantidad o error. Lo ignoramos.
+                if "COD" not in contexto and "CÓD" not in contexto:
+                    continue 
 
-                # Si pasó los filtros de seguridad, guardamos la etiqueta
                 item = {
                     "pagina": num_pagina + 1,
                     "codigo": row['Codigo de Producto'],
@@ -87,7 +72,6 @@ for num_pagina in range(len(doc)):
                 tags_pagina.append(item)
                 codigos_encontrados.add(row['Codigo de Producto'])
 
-    # Anti-superposición
     filtrados = []
     for nt in tags_pagina:
         es_duplicado = False
@@ -101,9 +85,8 @@ for num_pagina in range(len(doc)):
     
     resultados.extend(filtrados)
 
-# 4. Guardar
 with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Hecho! {len(codigos_encontrados)} productos indexados con precisión exacta.")
+print(f"¡Hecho! Se procesaron {len(codigos_encontrados)} productos bajo la regla estricta.")

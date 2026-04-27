@@ -48,9 +48,9 @@ body {
     line-height: 1.1; /* Mantiene los textos pegaditos */
     
     /* LA SOLUCIÓN DEFINITIVA DE ALTURA:
-       Incrementamos el offset vertical a 25px para que la etiqueta suba
-       y no tape el nombre del producto, cubriendo parte de la imagen. */
-    transform: translate(-50%, calc(-100% - 25px));
+       Subimos a 45px para que la etiqueta salte el texto 
+       y descanse cómodamente sobre la imagen del producto. */
+    transform: translate(-50%, calc(-100% - 45px));
     
     pointer-events: none;
     text-align: center;

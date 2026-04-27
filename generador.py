@@ -40,7 +40,7 @@ print(f"Procesando {len(doc)} páginas...")
 
 for num_pagina in range(len(doc)):
     pagina = doc.load_page(num_pagina)
-    palabras = pagina.get_text("words") # [x0, y0, x1, y1, "texto", block_no, line_no, word_no]
+    palabras = pagina.get_text("words") 
     
     tags_pagina = []
     
@@ -51,24 +51,31 @@ for num_pagina in range(len(doc)):
             
         codigo_excel = normalizar_codigo(row['Codigo de Producto'])
         
+        # --- NUEVO ESCUDO: Evitar códigos vacíos que rompen todo ---
+        if not codigo_excel: 
+            continue
+        
         for i, p in enumerate(palabras):
             texto_pdf_original = p[4]
             texto_pdf_limpio = normalizar_codigo(texto_pdf_original)
             
-            # Si el texto del PDF contiene el código del Excel (ej: "COD.851" contiene "851")
-            if codigo_excel in texto_pdf_limpio:
+            # Removemos la palabra COD para comparar solo el número puro
+            texto_sin_cod = texto_pdf_limpio.replace("COD", "")
+            
+            # --- AQUÍ ESTABA EL ERROR FATAL ---
+            # Ahora exigimos COINCIDENCIA EXACTA
+            if codigo_excel == texto_pdf_limpio or codigo_excel == texto_sin_cod:
                 
                 # REGLA DE SEGURIDAD PARA NÚMEROS CORTOS
                 if len(codigo_excel) <= 4:
-                    # Buscamos "COD" en la misma palabra o en las 2 anteriores
                     contexto = texto_pdf_original.upper()
                     if i > 0: contexto += palabras[i-1][4].upper()
                     if i > 1: contexto += palabras[i-2][4].upper()
                     
                     if "COD" not in contexto and "CÓD" not in contexto:
-                        continue # Es un gramaje o cantidad, lo ignoramos
+                        continue 
 
-                # Si pasó el filtro, guardamos
+                # Si pasó los filtros de seguridad, guardamos la etiqueta
                 item = {
                     "pagina": num_pagina + 1,
                     "codigo": row['Codigo de Producto'],
@@ -88,7 +95,7 @@ for num_pagina in range(len(doc)):
             if abs(nt['x'] - ft['x']) < 7 and abs(nt['y'] - ft['y']) < 5:
                 es_duplicado = True
                 if nt['precio_promo'] and not ft['precio_promo']:
-                    ft.update(nt) # Preferir el que tiene promo
+                    ft.update(nt) 
                 break
         if not es_duplicado: filtrados.append(nt)
     
@@ -99,4 +106,4 @@ with open('datos.json', 'w', encoding='utf-8') as f:
     json.dump(resultados, f, indent=4, ensure_ascii=False)
 
 print("-" * 30)
-print(f"¡Hecho! {len(codigos_encontrados)} productos indexados en {len(doc)} páginas.")
+print(f"¡Hecho! {len(codigos_encontrados)} productos indexados con precisión exacta.")

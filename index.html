@@ -3,17 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Interactivo - Distribuidora OKS</title>
+    <title>Catálogo Distribuidora OKS</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
 </head>
 <body>
 
-    <div class="contenedor-catalogo">
-        <div id="flipbook">
-            </div>
-    </div>
+    <div id="catalogo" class="contenedor-catalogo">
+        </div>
 
-    <script src="app.js"></script>
+    <script>
+        // Configuramos la cantidad de páginas reales de tu PDF (ej. 60)
+        const totalPaginas = 60; 
+        const contenedor = document.getElementById('catalogo');
+
+        // 1. Cargamos los datos de los precios
+        fetch('datos.json')
+            .then(response => response.json())
+            .then(datos => {
+                
+                // 2. Creamos cada página una debajo de otra
+                for (let i = 1; i <= totalPaginas; i++) {
+                    const divPagina = document.createElement('div');
+                    divPagina.className = 'page';
+                    
+                    // Imagen de la página
+                    const img = document.createElement('img');
+                    img.src = `paginas/pagina_${i}.png`; // Ajusta la ruta a tus fotos
+                    divPagina.appendChild(img);
+
+                    // 3. Buscamos qué precios pertenecen a esta página
+                    const preciosPagina = datos.filter(d => d.pagina === i);
+                    
+                    preciosPagina.forEach(item => {
+                        const etiqueta = document.createElement('div');
+                        etiqueta.className = 'etiqueta-precio';
+                        etiqueta.style.left = item.x + '%';
+                        etiqueta.style.top = item.y + '%';
+
+                        let contenido = '';
+                        if (item.precio_promo) {
+                            contenido = `
+                                <span class="precio-normal tachado">$ ${item.precio_normal}</span>
+                                <span class="precio-promo">$ ${item.precio_promo}</span>
+                            `;
+                        } else {
+                            contenido = `<span class="precio-normal">$ ${item.precio_normal}</span>`;
+                        }
+                        
+                        etiqueta.innerHTML = contenido;
+                        divPagina.appendChild(etiqueta);
+                    });
+
+                    contenedor.appendChild(divPagina);
+                }
+            });
+    </script>
 </body>
 </html>
